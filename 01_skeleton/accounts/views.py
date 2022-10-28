@@ -3,9 +3,10 @@ from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib.auth import get_user_model
+from django.http import JsonResponse
 
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 
@@ -113,14 +114,22 @@ def profile(request, username):
 @require_POST
 def follow(request, user_pk):
     if request.user.is_authenticated:
-        User = get_user_model()
-        me = request.user
-        you = User.objects.get(pk=user_pk)
+
+        me = request.user # 요청한 사람
+        you = get_object_or_404(get_user_model(), pk=user_pk) # follow를 할 사람
+
+        # 내가 날 팔로우 시도 X
         if me != you:
-            if you.followers.filter(pk=me.pk).exists():
+            if you.followers.filter(pk=me.pk).exists(): # 이미 팔로우
                 you.followers.remove(me)
-            else:
+                is_followed = False
+            else: # 팔로우 전이라면
                 you.followers.add(me)
-        return redirect('accounts:profile', you.username)
+                is_followed = True
+            context = {
+                'is_followed': is_followed,
+            }
+            return JsonResponse(context)
+        # return redirect('accounts:profile', you.username)
     return redirect('accounts:login')
 
