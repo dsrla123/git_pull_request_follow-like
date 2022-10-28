@@ -17,9 +17,9 @@
       <form class="like_forms" data-article-id="{{article.id}}" >
         {% csrf_token %}
         {% if request.user in article.like_users.all %}
-          <input type="submit" id="like-{{article.pk}}">
+          <input type="submit" id="like-{{article.pk}}" value='좋아요 취소'>
         {% else %}
-          <input type="submit" id="like-{{article.pk}}">
+          <input type="submit" id="like-{{article.pk}}" value='좋아요'>
         {% endif %}
       </form>
     </div>
